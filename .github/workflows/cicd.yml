@@ -63,5 +63,7 @@ jobs:
 
       - name: Deploy Application
         run: |
-          pm2 start app.js --name node-app
+          pm2 start npm --name node-app -- start
           pm2 save
+
+
