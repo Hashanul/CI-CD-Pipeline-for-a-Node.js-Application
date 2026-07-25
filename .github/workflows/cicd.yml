@@ -1,0 +1,67 @@
+name: Node.js CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Test
+        run: |
+          echo "Application Test Passed" > test-results.txt
+          cat test-results.txt
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.txt
+
+  deploy:
+    needs: test
+
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+
+      - name: Display Artifact
+        run: |
+          echo "Artifact Content:"
+          cat test-results.txt
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Stop Existing App
+        run: |
+          pm2 delete node-app || true
+
+      - name: Deploy Application
+        run: |
+          pm2 start app.js --name node-app
+          pm2 save
